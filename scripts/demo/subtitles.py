@@ -2,11 +2,11 @@
 uses, so the words on screen and the words being spoken cannot drift apart.
 
 Timing comes from two measured things and nothing hand-tuned: the beat offset
-record.mjs recorded, and the real duration of the wav piper or kokoro produced
+record.mjs recorded, and the real duration of the wav the selected TTS produced
 for that line. A subtitle that outlives its audio is worse than none -- it
 asserts a claim the video is no longer making.
 
-Long lines are split into readable cards rather than shrunk. Two lines of ~42
+Long lines are split into readable cards rather than shrunk. Two lines of 36
 characters is the broadcast convention and it is a convention because it is
 what a person can read in one glance while also watching a picture.
 """
@@ -16,7 +16,7 @@ import sys
 import wave
 from pathlib import Path
 
-MAX_CHARS = 42
+MAX_CHARS = 36
 MAX_LINES = 2
 MIN_CARD_MS = 900
 
@@ -75,7 +75,14 @@ def wrap(text):
 def cards(text):
     """Group wrapped lines into cards of at most MAX_LINES."""
     lines = wrap(text)
-    return ['\n'.join(lines[i : i + MAX_LINES]) for i in range(0, len(lines), MAX_LINES)]
+    if not lines:
+        return []
+    # Put the shorter card first. A trailing one-line card often severs the
+    # sentence's proof phrase (especially a spoken amount) from its setup.
+    first = len(lines) % MAX_LINES or MAX_LINES
+    groups = [lines[:first]]
+    groups.extend(lines[i : i + MAX_LINES] for i in range(first, len(lines), MAX_LINES))
+    return ['\n'.join(group) for group in groups]
 
 
 def ts(ms):

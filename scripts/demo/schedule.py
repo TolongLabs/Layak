@@ -1,4 +1,4 @@
-"""Push narration starts later so no line is spoken over the next one.
+"""Prevent narration collisions and reject speech that crosses a visual beat.
 
 A beat offset says when a moment happens on screen. It says nothing about how
 long the line describing it takes to read, and `narrate.sh` mixed every segment
@@ -7,9 +7,9 @@ next beat played *underneath* it. Two of six lines did that in the launch cut,
 and the overlap is inaudible to every mechanical check we run: level, clipping,
 silence and dynamics are all normal when two voices are talking at once.
 
-Beats stay authoritative for the EARLIEST a line may start. This only ever moves
-a line later, and only far enough to clear the one before it, so narration still
-tracks the picture rather than drifting free of it.
+Beats stay authoritative for the EARLIEST a line may start. A line may move only
+far enough to clear the one before it; if that makes it outlive the visual it
+describes, the render fails and the capture must be retimed.
 """
 
 import json
@@ -59,6 +59,19 @@ def main(d):
     print(f'  {len(lines)} lines, {shifted} pushed later, {overlaps} overlapping')
     if overlaps:
         print('  OVERLAP REMAINS -- narration would talk over itself', file=sys.stderr)
+        return 1
+    visual_overruns = [
+        (index, line)
+        for index, line in enumerate(lines)
+        if line.get('visual_end_ms') is not None and line['ms'] + line['dur_ms'] > line['visual_end_ms']
+    ]
+    for index, line in visual_overruns:
+        overrun = line['ms'] + line['dur_ms'] - line['visual_end_ms']
+        print(
+            f'  VISUAL OVERRUN: line {index} ({line.get("beat", "unknown")}) runs {overrun}ms into the next beat',
+            file=sys.stderr,
+        )
+    if visual_overruns:
         return 1
     print(f'  narration ends at {prev_end}ms')
     return 0

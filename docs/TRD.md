@@ -10,6 +10,30 @@
 
 ---
 
+## Current Implementation Note — 15 September 2026 Pitch
+
+The original metadata and sections below preserve the hackathon design and subsequent engineering history. Their
+Cloud Run / Vertex AI Search deployment descriptions do not describe the migrated implementation used for the VC
+pitch. This note takes precedence for current stack claims.
+
+The reviewed application snapshot is
+[`TolongLabs/Layak@1503ee8`](https://github.com/TolongLabs/Layak/tree/1503ee8b9bbe61ce28a820225358c482be80632b).
+It contains a Next.js 16 / React 19 frontend targeting Vercel, a FastAPI / Python backend with Google ADK targeting
+Render, Gemini Developer API calls, and local NumPy vector retrieval over a PDF index with Gemini query embeddings.
+Firebase Auth and Firestore remain. These are implementation and configuration findings, not a live deployment audit.
+
+- Matching registers 19 rule modules; source-file counts must not be described as independently validated programmes.
+- Retrieval failures can use curated citations; matching does not fail closed simply because retrieval fails.
+- Raw uploads are processed transiently; derived evaluations persist in Firestore. Draft PDF bytes are returned for
+  download and regenerated on demand, rather than persisted with evaluation events.
+- Eligibility and benefit estimates do not constitute agency approval, application submission, or payment.
+- Partner integration, tenant governance, independent policy validation, and operational unit economics remain work to
+  validate before a production B2B pilot. A self-hosted language model is not a current capability.
+
+The [VC script evidence ledger](demo/scripts/vc-1337-2026-09-15.md) identifies the implementation files and known
+limitations used in the presentation. The
+[migration design](research/engineering/specs/2026-06-14-gcp-to-free-tier-migration-design.md) preserves the rationale.
+
 ## Table Of Contents
 
 1. [Architecture Overview](#1-architecture-overview)
