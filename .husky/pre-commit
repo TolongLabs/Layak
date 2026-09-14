@@ -1,2 +1,7 @@
-pnpm --dir frontend exec lint-staged
-pnpm exec lint-staged
+if command -v pnpm >/dev/null 2>&1; then
+  pnpm --dir frontend exec lint-staged
+  pnpm exec lint-staged
+else
+  corepack pnpm --dir frontend exec lint-staged
+  corepack pnpm exec lint-staged
+fi

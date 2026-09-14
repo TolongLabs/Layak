@@ -10,7 +10,7 @@
     "prepare": "husky",
     "dev": "concurrently -k -n frontend,backend \"pnpm run dev:frontend\" \"pnpm run dev:backend\"",
     "dev:frontend": "pnpm -C frontend dev",
-    "dev:backend": "wsl.exe bash -lc \"cd /home/adam/CS/Layak/backend && ./.venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8080\"",
+    "dev:backend": "cd backend && uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8080",
     "build": "pnpm -C frontend build",
     "start": "pnpm -C frontend start",
     "lint": "pnpm -C frontend lint",

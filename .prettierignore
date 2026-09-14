@@ -44,3 +44,7 @@ temp/
 
 # Custom
 # ===========
+
+# Vendored agent packages; preserve upstream formatting and content hashes.
+.agents/
+.claude/skills/
