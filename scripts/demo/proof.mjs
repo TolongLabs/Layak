@@ -1,4 +1,5 @@
 const AISYAH_NAME = 'aisyah binti ahmad'
+const MIN_CHAT_ANSWER_CHARS = 80
 
 function normaliseName(value) {
   return String(value ?? '')
@@ -43,4 +44,13 @@ export async function verifyAisyahResult(page, response, timeout = 45_000) {
 
 export async function verifyGovernmentSource(schemes, timeout = 15_000) {
   await schemes.locator('a[href^="https://"][href*=".gov.my/"]').first().waitFor({ state: 'visible', timeout })
+}
+
+export function isSubstantiveChatAnswer(value, options = {}) {
+  const { minChars = MIN_CHAT_ANSWER_CHARS, keywords = [] } = options
+  const normalized = String(value ?? '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLocaleLowerCase('en')
+  return normalized.length >= minChars && keywords.every((keyword) => normalized.includes(keyword.toLocaleLowerCase('en')))
 }

@@ -68,7 +68,7 @@ virtual environments or build output. `.env.example` contains names and public d
 ## Demo Standard
 
 The investor walkthrough must show a real end-to-end outcome, not a feature inventory. Prefer the stable guest/demo
-flow, keep runtime between 60 and 75 seconds, and make the on-screen action agree with the narration. The voice and
+flow, keep runtime between 60 and 120 seconds, and make the on-screen action agree with the narration. The voice and
 burned subtitles must come from the same scheduled text. Export generated media outside the repository.
 
 `scripts/demo/` was ported from `TolongLabs/codenection-dev/scripts/demo`, which declared an earlier same-team origin.

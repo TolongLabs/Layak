@@ -12,6 +12,35 @@ test('warmProduction primes guest dashboard and saved results outside a recordin
     waitFor: async () => {},
     click: async () => visits.push('guest-click')
   }
+  const first = {
+    first() {
+      return this
+    },
+    waitFor: async () => visits.push('chat-ready'),
+    click: async () => visits.push('chat-open')
+  }
+  const chatInput = {
+    waitFor: async () => visits.push('chat-input-ready'),
+    inputValue: async () =>
+      'Who in my family should claim the dependent-parent relief, and how do we coordinate it on the LHDN portal?',
+    fill: async () => visits.push('chat-question-set')
+  }
+  const chatDialog = {
+    getByPlaceholder: () => chatInput,
+    getByRole: (_role, { name }) => ({
+      click: async () => visits.push(name === 'Send' ? 'chat-send' : 'chat-close')
+    }),
+    getByText: () => ({ waitFor: async () => visits.push('chat-finished') }),
+    locator: () => ({
+      last: () => ({
+        innerText: async () =>
+          'For JKM Warga Emas, prepare the application documents listed in the official guidance, including identity and income records.'
+      })
+    })
+  }
+  const strategy = {
+    getByRole: () => first
+  }
   const startEvaluation = {
     first() {
       return this
@@ -44,10 +73,11 @@ test('warmProduction primes guest dashboard and saved results outside a recordin
   const page = {
     setDefaultTimeout() {},
     goto: async (url) => visits.push(url),
-    getByRole: () => guest,
+    getByRole: (role) => (role === 'dialog' ? chatDialog : guest),
     waitForResponse: () => resultResponse,
     locator: (selector) => {
       if (selector === '#overview') return overview
+      if (selector === '#strategy') return strategy
       if (selector === '#preview button[aria-expanded]') return draftToggle
       if (selector === '#preview iframe') return packetFrame
       return startEvaluation
@@ -81,6 +111,13 @@ test('warmProduction primes guest dashboard and saved results outside a recordin
     'dashboard-ready',
     'https://layak.example/results/demo',
     'result-ready',
+    'chat-ready',
+    'chat-open',
+    'chat-input-ready',
+    'chat-question-set',
+    'chat-send',
+    'chat-finished',
+    'chat-close',
     'draft-ready',
     'draft-click',
     'packet-ready'
@@ -105,6 +142,26 @@ test('warmProduction retries a transient cold-start failure', async () => {
     waitFor: async () => {},
     click: async () => {}
   }
+  const chatInput = {
+    waitFor: async () => {},
+    inputValue: async () =>
+      'Who in my family should claim the dependent-parent relief, and how do we coordinate it on the LHDN portal?',
+    fill: async () => {}
+  }
+  const chatDialog = {
+    getByPlaceholder: () => chatInput,
+    getByRole: () => first,
+    getByText: () => ({ waitFor: async () => {} }),
+    locator: () => ({
+      last: () => ({
+        innerText: async () =>
+          'For JKM Warga Emas, prepare the application documents listed in the official guidance, including identity and income records.'
+      })
+    })
+  }
+  const strategy = {
+    getByRole: () => first
+  }
   const resultResponse = {
     json: async () => ({ profile: { name: 'Aisyah binti Ahmad' } }),
     request: () => ({ method: () => 'GET' }),
@@ -116,9 +173,10 @@ test('warmProduction retries a transient cold-start failure', async () => {
     goto: async () => {
       if (attempts === 1) throw new Error('Render is waking up')
     },
-    getByRole: () => first,
+    getByRole: (role) => (role === 'dialog' ? chatDialog : first),
     waitForResponse: () => resultResponse,
     locator: (selector) => {
+      if (selector === '#strategy') return strategy
       if (selector.includes('button')) return first
       if (selector.includes('iframe')) return first
       return ready

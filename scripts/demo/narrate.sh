@@ -22,7 +22,7 @@ OUT="${DEMO_OUT:-$DIR/demo.mp4}"
 BGM="${DEMO_BGM:-}"
 BGM_GAIN_DB="${DEMO_BGM_GAIN_DB:--17}"
 MIN_DURATION="${DEMO_MIN_DURATION:-60}"
-MAX_DURATION="${DEMO_MAX_DURATION:-75}"
+MAX_DURATION="${DEMO_MAX_DURATION:-120}"
 
 # assemble.sh joins the capture to the pitch slides; when it has run, that is
 # the video to narrate over. Falls back to the raw capture for a plain demo.
@@ -92,8 +92,9 @@ total=$(awk -v p="$pad" -v v="$vid" 'BEGIN{printf "%.3f", v+p}')
 # Alignment=2 is bottom-centre in libass. BorderStyle=3 draws a box behind the
 # text rather than an outline, which is the only thing that stays readable over a
 # screenshot whose background we do not control. Quicksand matches the product;
-# the compact type and low margin leave the interface unobscured.
-subs="subtitles='$DIR/narration.srt':force_style='FontName=Quicksand,FontSize=10.5,PrimaryColour=&H00FFFFFF,OutlineColour=&H70101310,BorderStyle=3,Outline=2,Shadow=0,Alignment=2,MarginV=10,Spacing=0.2'"
+# the compact type and low margin leave the interface unobscured. A narrow box
+# pad keeps the backing strips of a two-line cue from touching each other.
+subs="subtitles='$DIR/narration.srt':force_style='FontName=Quicksand,FontSize=10.5,PrimaryColour=&H00FFFFFF,OutlineColour=&H70101310,BorderStyle=3,Outline=0.75,Shadow=0,Alignment=2,MarginV=10,Spacing=0.2'"
 
 # The raw capture is 1440x900 and needs scaling into a 1920x1080 frame. The
 # joined pitch cut is ALREADY 1920x1080, and re-applying that scale would shrink
