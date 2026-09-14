@@ -12,11 +12,11 @@ human review, and source provenance at its core.
 
 ## Problem
 
-Malaysia's social-assistance estate spans 167 schemes across 17 ministries and agencies. The resulting fragmentation
+The historical research brief describes 167 schemes across 17 ministries and agencies. This is landscape context,
+not Layak's implemented or independently verified coverage. The resulting fragmentation
 creates discovery costs, duplicated submissions, and exclusion risk for people who may already qualify for support.
-The
-[product research brief](https://github.com/TolongLabs/Layak-Pitch/blob/main/docs/research/market/project-research-brief.md)
-documents the policy landscape, source evidence, and corrections that shaped Layak's initial scope.
+The [product research brief](research/market/project-research-brief.md) documents the policy landscape, source evidence,
+and corrections that shaped Layak's initial scope.
 
 Citizens face three practical barriers:
 
@@ -31,8 +31,7 @@ documents contain enough information to begin an assessment, but household compo
 still require explicit confirmation. Layak therefore combines extraction with user review instead of treating OCR as
 truth.
 
-Synthetic fixtures for Aisyah and four additional personas are retained in the pitch repository's
-[`demo/fixtures/`](https://github.com/TolongLabs/Layak-Pitch/tree/main/docs/demo/fixtures).
+Synthetic fixtures for Aisyah and four additional personas are retained under [`demo/fixtures/`](demo/fixtures/).
 
 ## Product Promise
 
@@ -62,16 +61,34 @@ Layak does not submit applications, guarantee eligibility, replace an agency dec
 
 ## Business Direction
 
-The hackathon prototype demonstrates a citizen-facing discovery and preparation layer. A production path can serve
-financial-wellness platforms, employers, community organizations, and public-sector delivery partners through
-consented eligibility screening, maintained policy data, analytics, and workflow integrations.
+For the 15 September 2026 VC discussion, start with Malaysian assistance discovery for individuals, demonstrate the
+working prototype, then introduce the proposed B2B eligibility infrastructure business. Keep end users free where
+possible; charge organisations that can demonstrate value from better engagement, lower support effort, or more useful
+application handoffs.
+
+The proposed first buyer is a digital-bank or e-wallet product or financial-wellness lead. Touch 'n Go eWallet and
+Ryt Bank are introduction targets, not customers or confirmed partners. Government and NGOs remain possible customers
+or distribution partners; universities, employers, scholarships, and other markets are later hypotheses.
+
+The commercial hypothesis is a paid scoped pilot followed by an annual platform fee with included assessments and
+usage overages. Pricing, cost per completed assessment, willingness to pay, and partner return are unvalidated. The
+meeting establishes no measured external user study or paying pilot. The team reports winning MyAIFutureHackathon
+Grand Champion; this is evidence of prototype execution, not market adoption.
+
+The immediate ask is two or three relevant introductions and guidance on validating the buyer, pricing, and pilot.
+Funding follows a scoped plan and agreed milestones. Illustrative pricing and funding sensitivities in the
+[VC rehearsal script](demo/scripts/vc-1337-2026-09-15.md) are discussion aids, not approved budgets or forecasts.
 
 Near-term diligence should validate:
 
-- willingness to pay and the appropriate buyer among citizens, employers, NGOs, and agencies;
-- the operating cost of maintaining current scheme rules and official evidence;
-- conversion from discovered eligibility to completed application; and
-- governance requirements for handling identity, income, and household data.
+- one partner's priority schemes and measurable workflow problem;
+- source freshness, independent rule review, and missing-income or household-data edge cases;
+- cost per completed assessment, including failures, retries, and human policy maintenance; and
+- discovery, completion, support effort, and official-portal handoffs against a baseline.
+
+The proposed 90-day plan targets ten buyer interviews, one design partner, five to ten reviewed priority schemes,
+100 synthetic boundary cases, and 20 consented user sessions before a bounded pilot decision. These are proposed
+targets, not achieved results or externally agreed commitments.
 
 ## Investment Narrative
 

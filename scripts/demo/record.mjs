@@ -17,6 +17,8 @@ import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
+import { auditCapture, REQUIRED_BEATS } from './contract.mjs'
+
 const DIR = process.env.DEMO_DIR || join(tmpdir(), 'layak-demo')
 const WEB = process.env.DEMO_WEB || 'https://layak.vercel.app'
 const OUT = join(DIR, 'capture')
@@ -35,8 +37,8 @@ try {
 rmSync(OUT, { recursive: true, force: true })
 mkdirSync(OUT, { recursive: true })
 
-const started = Date.now()
 const beats = []
+let started = 0
 // A beat is a name and the offset it happened at. Call it AFTER the wait that
 // settles the frame, so it points at what the viewer is actually looking at.
 const mark = (name) => {
@@ -50,6 +52,17 @@ const beat = (page, ms) => page.waitForTimeout(ms)
 // `channel: 'chrome'` -- the system Chrome. Drop the channel to use Playwright's
 // own Chromium once `playwright install chromium` has been run.
 const browser = await chromium.launch({ channel: process.env.DEMO_CHANNEL || 'chrome' })
+const { walk } = await import('./walk.mjs')
+if (process.env.DEMO_WARMUP !== '0') {
+  const { warmProduction } = await import('./warmup.mjs')
+  const resultUrl =
+    process.env.DEMO_RESULT_URL || 'https://layak.vercel.app/dashboard/evaluation/results/O1X98dEZYnePTUAG8nfz'
+  const warmed = await warmProduction({ browser, web: WEB, resultUrl })
+  if (!warmed) {
+    await browser.close()
+    throw new Error('production warm-up failed twice; capture refused')
+  }
+}
 const ctx = await browser.newContext({
   viewport: { width: 1440, height: 900 },
   deviceScaleFactor: 1,
@@ -57,6 +70,7 @@ const ctx = await browser.newContext({
 })
 const page = await ctx.newPage()
 page.setDefaultTimeout(30000)
+started = Date.now()
 
 const errors = []
 page.on('pageerror', (e) => errors.push(String(e).slice(0, 120)))
@@ -66,12 +80,13 @@ page.on('console', (m) => m.type() === 'error' && errors.push(m.text().slice(0, 
 // beat that silently does not render leaves a video that still plays and is
 // missing the argument -- and the narration then reads a line over a picture
 // that does not show it. walk.mjs sets these; a zero is a failed run.
-const filmed = {}
+const filmed = Object.fromEntries(REQUIRED_BEATS.map((name) => [name, 0]))
+let walkError = null
 
 try {
-  const { walk } = await import('./walk.mjs')
   await walk({ page, mark, beat: (ms) => beat(page, ms), filmed, WEB })
 } catch (e) {
+  walkError = e
   console.log(`  FAILED: ${String(e).slice(0, 200)}`)
 } finally {
   const video = page.video()
@@ -85,13 +100,17 @@ try {
 
   // Named surfaces, reported individually. "The video looks fine" is not a check.
   const entries = Object.entries(filmed)
-  if (entries.length) {
-    const missing = entries.filter(([, got]) => !got).map(([name]) => name)
-    console.log(`surfaces filmed: ${entries.map(([k, v]) => `${k}=${v}`).join(' ')}`)
-    if (missing.length) console.log(`  !! NOT FILMED: ${missing.join(', ')} -- do not narrate these beats`)
+  const audit = auditCapture(beats, filmed)
+  console.log(`surfaces filmed: ${entries.map(([k, v]) => `${k}=${v}`).join(' ')}`)
+  if (audit.missing.length) {
+    console.log(`  !! NOT FILMED: ${audit.missing.join(', ')} -- do not narrate these beats`)
+  }
+  if (!audit.ordered) {
+    console.log(`  !! INVALID BEAT ORDER: ${audit.observed.join(' -> ')}`)
   }
   console.log(`console errors: ${errors.length}`)
   for (const e of errors.slice(0, 5)) {
     console.log(`  ! ${e}`)
   }
+  if (walkError || !audit.complete) process.exitCode = 1
 }
