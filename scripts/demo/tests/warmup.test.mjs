@@ -46,6 +46,7 @@ test('warmProduction primes guest dashboard and saved results outside a recordin
         }
       }
       if (selector === 'p.italic') return { count: async () => 0 }
+      if (selector === 'li') return { count: async () => 3 }
       return citation
     }
   }
@@ -193,6 +194,7 @@ test('warmProduction retries a transient cold-start failure', async () => {
         }
       }
       if (selector === 'p.italic') return { count: async () => 0 }
+      if (selector === 'li') return { count: async () => 3 }
       return citation
     }
   }

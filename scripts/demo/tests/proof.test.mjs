@@ -65,7 +65,7 @@ test('saved result proof rejects a different citizen', async () => {
   await assert.rejects(() => proof.verifyAisyahResult(page, response), /expected Aisyah binti Ahmad/i)
 })
 
-test('Cik Lay proof rejects a token or truncated answer', () => {
+test('Cik Lay proof rejects token, truncated, and common refusal answers', () => {
   assert.equal(proof.isSubstantiveChatAnswer('To coordinate'), false)
   assert.equal(
     proof.isSubstantiveChatAnswer(
@@ -89,11 +89,30 @@ test('Cik Lay proof rejects a token or truncated answer', () => {
   )
   assert.equal(
     proof.isSubstantiveChatAnswer(
-      'I cannot verify JKM requirements or provide the documents you need because the live sources are unavailable right now.',
-      { keywords: ['jkm', 'document'] }
+      'To apply for JKM Warga Emas, obtain the JKM 18 form, fill in the household income fields, and submit it with identity proof.',
+      {
+        keywords: ['jkm'],
+        requiredPatterns: [/\b(?:prepare|obtain|complete|submit|provide)\b/i, /\b(?:form|income|identity|residence)\b/i]
+      }
     ),
-    false
+    true
   )
+  const refusals = [
+    'I cannot verify JKM requirements or provide the documents you need because the live sources are unavailable right now.',
+    "I don't have enough information in the JKM documents to provide application steps, so please check with the agency directly.",
+    'I could not find enough detail in the JKM documents to prepare a reliable application answer for you today.',
+    'The available JKM documents do not contain enough information for me to provide the application steps you requested.'
+  ]
+  for (const refusal of refusals) {
+    assert.equal(
+      proof.isSubstantiveChatAnswer(refusal, {
+        keywords: ['jkm', 'document'],
+        requiredPatterns: [/\b(?:prepare|obtain|complete|submit|provide)\b/i, /\b(?:form|income|identity|residence)\b/i]
+      }),
+      false,
+      refusal
+    )
+  }
 })
 
 test('grounded Cik Lay proof requires one new answer without an unavailable marker and a JKM citation', async () => {
@@ -118,6 +137,7 @@ test('grounded Cik Lay proof requires one new answer without an unavailable mark
         }
       }
       if (selector === 'p.italic') return { count: async () => 0 }
+      if (selector === 'li') return { count: async () => 3 }
       if (selector === '.citation-chip') return citation
       throw new Error(`unexpected selector ${selector}`)
     }

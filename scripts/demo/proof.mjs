@@ -1,7 +1,7 @@
 const AISYAH_NAME = 'aisyah binti ahmad'
 const MIN_CHAT_ANSWER_CHARS = 80
 const CHAT_REFUSAL =
-  /\b(?:i\s+(?:cannot|can't|can not)|i(?:'|’)m unable to|unable to)\s+(?:\w+\s+){0,3}(?:verify|provide|find|confirm|access|answer)\b/i
+  /\b(?:(?:i(?:'|’)m|i am)\s+unable to|(?:cannot|can't|can not|could not|couldn't|do not|don't|does not|doesn't|did not|didn't)\b.{0,60}\b(?:have|verify|provide|find|confirm|access|answer|contain))\b/i
 
 function normaliseName(value) {
   return String(value ?? '')
@@ -49,7 +49,7 @@ export async function verifyGovernmentSource(schemes, timeout = 15_000) {
 }
 
 export function isSubstantiveChatAnswer(value, options = {}) {
-  const { minChars = MIN_CHAT_ANSWER_CHARS, keywords = [] } = options
+  const { minChars = MIN_CHAT_ANSWER_CHARS, keywords = [], requiredPatterns = [] } = options
   const normalized = String(value ?? '')
     .replace(/\s+/g, ' ')
     .trim()
@@ -57,7 +57,8 @@ export function isSubstantiveChatAnswer(value, options = {}) {
   return (
     normalized.length >= minChars &&
     !CHAT_REFUSAL.test(normalized) &&
-    keywords.every((keyword) => normalized.includes(keyword.toLocaleLowerCase('en')))
+    keywords.every((keyword) => normalized.includes(keyword.toLocaleLowerCase('en'))) &&
+    requiredPatterns.every((pattern) => pattern.test(normalized))
   )
 }
 
@@ -72,8 +73,19 @@ export async function verifyGroundedChatAnswer(chatDialog, previousAnswerCount, 
   }
 
   const answerText = await answer.locator('.break-words').first().innerText()
-  if (!isSubstantiveChatAnswer(answerText, { keywords: ['jkm', 'document'] })) {
-    throw new Error(`Cik Lay returned an incomplete or irrelevant answer: ${answerText.slice(0, 80)}`)
+  if (
+    !isSubstantiveChatAnswer(answerText, {
+      keywords: ['jkm'],
+      requiredPatterns: [
+        /\b(?:prepare|obtain|complete|fill|submit|bring|download|collect|provide)\b/i,
+        /\b(?:form|mykad|identity|income|residence|medical|birth certificate)\b/i
+      ]
+    })
+  ) {
+    throw new Error(`Cik Lay returned an incomplete or irrelevant answer: ${answerText.slice(0, 160)}`)
+  }
+  if ((await answer.locator('li').count()) < 2) {
+    throw new Error('Cik Lay answer did not include concrete application or document steps')
   }
   if ((await answer.locator('p.italic').count()) > 0) {
     throw new Error('Cik Lay completed without live PDF grounding')
