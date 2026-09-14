@@ -35,16 +35,19 @@ class SubtitleLayoutTests(unittest.TestCase):
             ],
         )
 
-    def test_burn_style_is_small_quicksand_and_low_on_screen(self) -> None:
+    def test_burn_style_is_small_quicksand_low_and_uses_compact_backing(self) -> None:
         script = (DEMO_DIR / 'narrate.sh').read_text(encoding='utf-8')
 
         self.assertIn('FontName=Quicksand', script)
         size = re.search(r'FontSize=([0-9.]+)', script)
         margin = re.search(r'MarginV=([0-9]+)', script)
+        backing = re.search(r'Outline=([0-9.]+)', script)
         self.assertIsNotNone(size)
         self.assertIsNotNone(margin)
+        self.assertIsNotNone(backing)
         self.assertLessEqual(float(size.group(1)), 11)
         self.assertLessEqual(int(margin.group(1)), 14)
+        self.assertLessEqual(float(backing.group(1)), 1)
 
     def test_generated_cards_fit_two_short_rows_without_overlapping_cues(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

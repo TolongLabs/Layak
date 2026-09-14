@@ -9,11 +9,16 @@ landing | 100 | Layak turns scattered aid portals into one guided citizen journe
 guest | 100 | Aisyah continues privately as a guest, without creating an account first.
 dashboard | 100 | From one dashboard, she begins a single guided eligibility assessment.
 intake | 100 | Her synthetic MyKad, payslip, utility bill, and three dependants fill one reviewable intake.
-processing | 100 | Layak extracts her documents, classifies the household, and checks deterministic rules.
-transition | 100 | A full evaluation takes about four minutes, so we rejoin Aisyah at completion.
+processing | 100 | Layak begins by extracting her documents into a structured household profile.
+transition | 100 | A full evaluation takes about one minute, so we rejoin Aisyah at completion.
 results | 100 | Her result surfaces twelve matches, worth thirteen thousand eight hundred eight ringgit a year.
-evidence | 100 | Every matched scheme explains the decision and reveals its supporting government source.
+qualification | 100 | She reveals the top match to see exactly why her household qualifies.
+evidence | 100 | The same decision links directly to its supporting government source.
+strategy | 100 | Strategy compares her matched schemes and flags coordination opportunities.
+ciklay_compact | 100 | Layak's built-in assistant, Cik Lay, opens with that recommendation already in context.
+ciklay_expanded | 100 | Aisyah expands the assistant and sends a specific follow-up question.
+ciklay_answer | 100 | Cik Lay answers against her results and the official scheme guidance.
 whatif | 100 | Aisyah tests a lower monthly income without restarting her assessment.
-scenario | 100 | The preview updates her annual relief to fourteen thousand five hundred fifty-eight ringgit.
+scenario | 100 | The preview updates her annual support to fourteen thousand five hundred fifty-eight ringgit.
 packets | 100 | Qualifying schemes become pre-filled, watermarked drafts ready for Aisyah to submit.
-end | 100 | She leaves knowing what she qualifies for, why, and exactly what to do next.
+end | 100 | Aisyah leaves with proof, personal guidance, and application-ready next steps.

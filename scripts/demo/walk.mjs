@@ -3,7 +3,12 @@
 // page exists, keeping Render cold starts out of the footage.
 
 import { smoothScrollTo } from './motion.mjs'
-import { verifyAisyahResult, verifyGovernmentSource, watchAisyahResult } from './proof.mjs'
+import {
+  verifyAisyahResult,
+  verifyGovernmentSource,
+  verifyGroundedChatAnswer,
+  watchAisyahResult
+} from './proof.mjs'
 
 const RESULT_FALLBACK =
   process.env.DEMO_RESULT_URL || 'https://layak.vercel.app/dashboard/evaluation/results/O1X98dEZYnePTUAG8nfz'
@@ -18,9 +23,14 @@ export const MIN_BEAT_INTERVAL_MS = Object.freeze({
   dashboard: 5_039,
   intake: 7_300,
   processing: 6_511,
-  transition: 5_679,
+  transition: 5_900,
   results: 6_233,
+  qualification: 6_000,
   evidence: 5_764,
+  strategy: 6_000,
+  ciklay_compact: 7_000,
+  ciklay_expanded: 6_000,
+  ciklay_answer: 6_000,
   whatif: 5_273,
   scenario: 6_191,
   packets: 6_060
@@ -128,7 +138,7 @@ export async function walk({ page, mark: captureMark, beat, filmed, WEB }) {
 
   // Keep the camera deterministic and the shared free-tier quota untouched.
   // The click and streaming UI are real; only this long-running sample request
-  // is held at its first SSE step before the explicit four-minute time jump.
+  // is held at its first SSE step before the explicit one-minute time jump.
   // Set DEMO_LIVE_PIPELINE=1 when deliberately recording the full live run.
   if (process.env.DEMO_LIVE_PIPELINE !== '1') {
     await page.route('**/api/agent/intake', (route) =>
@@ -166,7 +176,7 @@ export async function walk({ page, mark: captureMark, beat, filmed, WEB }) {
           Real analysis in progress
         </p>
         <h2 style="margin:0;font:600 54px/1.08 Georgia,serif;letter-spacing:-.025em;color:#183d30">
-          About four minutes later
+          About one minute later
         </h2>
         <p style="margin:22px 0 0;font:500 20px/1.6 Quicksand,system-ui,sans-serif;color:#45645a">
           Rejoining Aisyah's completed evaluation
@@ -195,15 +205,73 @@ export async function walk({ page, mark: captureMark, beat, filmed, WEB }) {
   await film({ name: 'results', locator: overview, hold: 5_000, page, mark, beat, filmed })
 
   const schemes = page.locator('#schemes')
-  const sourceButton = schemes.locator('summary').filter({ hasText: 'Sources' }).first()
+  // Anchor the card before revealing it. The button's accessible name changes
+  // after click, so deriving the card from that live locator would retarget the
+  // next still-blurred match and open the wrong Sources panel.
+  const topScheme = schemes.locator('li[id^="scheme-"]').first()
+  const whyQualify = topScheme.getByRole('button', { name: 'Tap to reveal' })
+  await whyQualify.waitFor({ state: 'visible' })
+  await smoothScrollTo(page, whyQualify, { viewportRatio: 0.32 })
+  await beat(250)
+  await whyQualify.click()
+  await topScheme.locator('button[aria-expanded="true"] p[aria-hidden="false"]').waitFor({ state: 'visible' })
+  await beat(250)
+  await mark('qualification')
+  filmed.qualification = 1
+  await beat(4_000)
+
+  const sourceButton = topScheme.locator('summary').filter({ hasText: 'Sources' }).first()
   await sourceButton.waitFor({ state: 'visible' })
-  await smoothScrollTo(page, schemes)
+  await smoothScrollTo(page, topScheme, { viewportRatio: 0.08 })
   await beat(250)
   await sourceButton.click()
-  await verifyGovernmentSource(schemes)
-  await film({ name: 'evidence', locator: schemes, hold: 3_600, page, mark, beat, filmed })
+  await verifyGovernmentSource(topScheme)
+  await film({ name: 'evidence', locator: topScheme, hold: 3_600, page, mark, beat, filmed })
 
-  // 4. Change one assumption and wait for the exact recalculated figure before
+  // 4. Show the cross-scheme recommendation, then carry its exact context into
+  // Cik Lay. The compact panel is filmed before expansion, and the answer is
+  // not marked until the streamed model turn has completed.
+  const strategy = page.locator('#strategy')
+  await film({ name: 'strategy', locator: strategy, hold: 4_500, page, mark, beat, filmed })
+
+  const askCikLay = strategy.getByRole('button', { name: 'Ask Cik Lay About This' }).first()
+  await askCikLay.waitFor({ state: 'visible' })
+  await askCikLay.click()
+  const chatDialog = page.getByRole('dialog', { name: 'Ask about this evaluation' })
+  await chatDialog.waitFor({ state: 'visible' })
+  await beat(300)
+  await mark('ciklay_compact')
+  filmed.ciklay_compact = 1
+  await beat(4_000)
+
+  const expandChat = chatDialog.getByRole('button', { name: 'Expand to centre modal' })
+  await expandChat.click()
+  await chatDialog.getByRole('button', { name: 'Collapse to side panel' }).waitFor({ state: 'visible' })
+  const chatInput = chatDialog.getByPlaceholder('Ask about your results…')
+  await chatInput.waitFor({ state: 'visible' })
+  await beat(300)
+  await mark('ciklay_expanded')
+  filmed.ciklay_expanded = 1
+  const stagedQuestion = await chatInput.inputValue()
+  if (!stagedQuestion.trim()) throw new Error('Strategy did not stage a Cik Lay question')
+  const chatQuestion = 'How do I apply for JKM Warga Emas, and what documents should I prepare?'
+  await chatInput.fill('')
+  await chatInput.pressSequentially(chatQuestion, { delay: 42 })
+  await beat(500)
+  const assistantAnswers = chatDialog.locator('.rounded-bl-sm')
+  const answerCountBefore = await assistantAnswers.count()
+  await chatDialog.getByRole('button', { name: 'Send' }).click()
+  await chatDialog.getByText(chatQuestion, { exact: true }).waitFor({ state: 'visible' })
+  await chatDialog.getByText('Follow-up questions', { exact: true }).waitFor({ state: 'visible', timeout: 90_000 })
+  await verifyGroundedChatAnswer(chatDialog, answerCountBefore)
+  await beat(300)
+  await mark('ciklay_answer')
+  filmed.ciklay_answer = 1
+  await beat(5_200)
+  await chatDialog.getByRole('button', { name: 'Close chat' }).click()
+  await chatDialog.waitFor({ state: 'hidden' })
+
+  // 5. Change one assumption and wait for the exact recalculated figure before
   // narrating it. Both slider motion and page motion stay linear on camera.
   const whatIf = page.locator('#whatIfs')
   filmed.whatif = 0
@@ -225,7 +293,7 @@ export async function walk({ page, mark: captureMark, beat, filmed, WEB }) {
     filmed.scenario = 0
   }
 
-  // 5. Finish on the generated artifact itself, not on another feature list.
+  // 6. Finish on the generated artifact itself, not on another feature list.
   const preview = page.locator('#preview')
   await preview.waitFor({ state: 'visible' })
   await smoothScrollTo(page, preview)

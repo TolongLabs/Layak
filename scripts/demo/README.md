@@ -13,7 +13,7 @@ walk.mjs ──► record.mjs ──► capture.webm ──► assemble.sh ─�
 - **Single source of truth**: Narration audio and subtitle generation both read `lines.json`. What is spoken and what is displayed cannot diverge.
 - **Beat-keyed timing**: Narration is anchored to UI beats measured during browser recording, not arbitrary static timestamps. If a network call slows down, narration follows the picture rather than drifting.
 - **Pitch slides are optional**: The normal path captures the live application directly without slides. Slide rendering and assembly remain available when needed.
-- **Target runtime**: Designed strictly for a 60–75 second investor/VC walkthrough.
+- **Target runtime**: Designed for a focused 60–120 second investor/VC walkthrough.
 
 ---
 
@@ -122,12 +122,12 @@ node scripts/demo/record.mjs
 ```
 
 Outputs `$DEMO_DIR/capture.webm` and `$DEMO_DIR/beats.json`. Review stdout to confirm every target beat was marked.
-Before recording starts, the runner warms the guest dashboard, saved result, and first packet preview so Render
-free-tier startup stays off-camera. The scripted path then preloads Aisyah's bundled synthetic intake and shows the
-pipeline beginning. A labeled "About four minutes later" card makes the jump to a persisted completed evaluation
+Before recording starts, the runner warms the guest dashboard, saved result, Cik Lay response, and first packet preview
+so Render free-tier startup stays off-camera. The scripted path then preloads Aisyah's bundled synthetic intake and
+shows the pipeline beginning. A labeled "About one minute later" card makes the jump to a persisted completed evaluation
 explicit; the capture never pretends that the full evaluation completed instantly. The runner retries one transient
 warm-up failure and refuses to record if the second attempt fails. It also verifies Aisyah's identity, `13,808` RM,
-12 matched schemes, and an official Malaysian `.gov.my` source before accepting the persisted result.
+12 matched schemes, an official Malaysian `.gov.my` source, and a completed Cik Lay answer before accepting the run.
 
 ### 2. Slide Assembly (Optional)
 
@@ -169,10 +169,10 @@ Verify all deliverable invariants before release:
 export DEMO_DIR="${TMPDIR:-/tmp}/layak-demo"
 DELIVERABLE="$DEMO_DIR/demo.mp4"
 
-# 1. Total runtime must be between 60 and 75 seconds:
+# 1. Total runtime must be between 60 and 120 seconds:
 DURATION=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$DELIVERABLE")
 echo "Measured duration: ${DURATION}s"
-python3 -c "import sys; d=float(sys.argv[1]); assert 60.0 <= d <= 75.0, f'Runtime {d}s outside 60-75s window'" "$DURATION"
+python3 -c "import sys; d=float(sys.argv[1]); assert 60.0 <= d <= 120.0, f'Runtime {d}s outside 60-120s window'" "$DURATION"
 
 # 2. Dimensions (1920x1080) and video codec (H.264):
 ffprobe -v error -select_streams v:0 -show_entries stream=width,height,codec_name -of csv=p=0 "$DELIVERABLE"
@@ -222,7 +222,7 @@ ls -lh ~/Downloads/Layak-VC-Walkthrough.mp4
 | `DEMO_BGM`           | `""`                                   | Optional background-music file, looped and ducked under speech  |
 | `DEMO_BGM_GAIN_DB`   | `-17`                                  | Music gain before speech-triggered ducking                      |
 | `DEMO_MIN_DURATION`  | `60`                                   | Reject a deliverable shorter than this many seconds             |
-| `DEMO_MAX_DURATION`  | `75`                                   | Reject a deliverable longer than this many seconds              |
+| `DEMO_MAX_DURATION`  | `120`                                  | Reject a deliverable longer than this many seconds              |
 
 ---
 
@@ -235,5 +235,5 @@ ls -lh ~/Downloads/Layak-VC-Walkthrough.mp4
 - **Beat Deconfliction**: A visual beat marks when a feature appears, not how long the narration line takes to speak. `schedule.py` may move a line only to clear prior speech, then fails the render if any line crosses into the next visual beat. Retiming the capture is required instead of narrating the wrong screen.
 - **Pacing and scrolling**: Camera moves use a constant-speed `requestAnimationFrame` interpolation from `motion.mjs`; do not restore Playwright's snapping `scrollIntoViewIfNeeded`. Beat intervals are floored against the measured Chatterbox and default Kokoro lines, while slow page work naturally counts toward the interval.
 - **16:10 to 16:9 Letterboxing**: The browser capture viewport is 1440x900 (16:10). Rather than cropping content to 16:9, it is scaled to 1728x1080 and padded horizontally to 1920x1080 using `DEMO_PAD` (`#F4F7F4`), making pillarbox bars blend seamlessly into the Layak page background.
-- **Subtitle layout rules**: Subtitles use Quicksand at `FontSize=10.5`, `MarginV=10`, and a compact translucent `BorderStyle=3` scrim. Cards wrap at 36 characters over at most two rows, and the schedule forbids cue overlap.
+- **Subtitle layout rules**: Subtitles use Quicksand at `FontSize=10.5`, `MarginV=10`, and a compact translucent `BorderStyle=3` scrim with `Outline=0.75` padding so adjacent backing rows remain separate. Cards wrap at 36 characters over at most two rows, and the schedule forbids cue overlap.
 - **Slide Subtitle Clearance**: When slides are rendered via `slides/render.mjs`, content must stay above `Y=852` px (`SUBTITLE_TOP`) to prevent collision with the bottom subtitle banner.

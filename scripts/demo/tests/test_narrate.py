@@ -18,7 +18,7 @@ class NarrateIntegrationTests(unittest.TestCase):
         script = (DEMO_DIR / 'narrate.sh').read_text(encoding='utf-8')
 
         self.assertIn('DEMO_MIN_DURATION:-60', script)
-        self.assertIn('DEMO_MAX_DURATION:-75', script)
+        self.assertIn('DEMO_MAX_DURATION:-120', script)
 
     def test_voice_bus_is_normalized_for_clear_dialogue(self) -> None:
         script = (DEMO_DIR / 'narrate.sh').read_text(encoding='utf-8')

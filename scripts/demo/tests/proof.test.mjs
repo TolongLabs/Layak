@@ -64,3 +64,98 @@ test('saved result proof rejects a different citizen', async () => {
 
   await assert.rejects(() => proof.verifyAisyahResult(page, response), /expected Aisyah binti Ahmad/i)
 })
+
+test('Cik Lay proof rejects token, truncated, and common refusal answers', () => {
+  assert.equal(proof.isSubstantiveChatAnswer('To coordinate'), false)
+  assert.equal(
+    proof.isSubstantiveChatAnswer(
+      'Coordinate with your siblings before filing: agree on one claimant, keep the parent-support records together, and make the same choice in the LHDN portal.'
+    ),
+    true
+  )
+  assert.equal(
+    proof.isSubstantiveChatAnswer(
+      'This is a detailed response about a different benefit and does not answer the application question that Aisyah asked.',
+      { keywords: ['jkm', 'document'] }
+    ),
+    false
+  )
+  assert.equal(
+    proof.isSubstantiveChatAnswer(
+      'For JKM Warga Emas, prepare the application documents listed in the official guidance, including identity and income records.',
+      { keywords: ['jkm', 'document'] }
+    ),
+    true
+  )
+  assert.equal(
+    proof.isSubstantiveChatAnswer(
+      'To apply for JKM Warga Emas, obtain the JKM 18 form, fill in the household income fields, and submit it with identity proof.',
+      {
+        keywords: ['jkm'],
+        requiredPatterns: [/\b(?:prepare|obtain|complete|submit|provide)\b/i, /\b(?:form|income|identity|residence)\b/i]
+      }
+    ),
+    true
+  )
+  const refusals = [
+    'I cannot verify JKM requirements or provide the documents you need because the live sources are unavailable right now.',
+    "I don't have enough information in the JKM documents to provide application steps, so please check with the agency directly.",
+    'I could not find enough detail in the JKM documents to prepare a reliable application answer for you today.',
+    'The available JKM documents do not contain enough information for me to provide the application steps you requested.'
+  ]
+  for (const refusal of refusals) {
+    assert.equal(
+      proof.isSubstantiveChatAnswer(refusal, {
+        keywords: ['jkm', 'document'],
+        requiredPatterns: [/\b(?:prepare|obtain|complete|submit|provide)\b/i, /\b(?:form|income|identity|residence)\b/i]
+      }),
+      false,
+      refusal
+    )
+  }
+})
+
+test('grounded Cik Lay proof requires one new answer without an unavailable marker and a JKM citation', async () => {
+  const checked = []
+  const citation = {
+    filter: ({ hasText }) => {
+      checked.push(hasText)
+      return citation
+    },
+    first: () => citation,
+    waitFor: async () => checked.push('citation-visible')
+  }
+  const answer = {
+    waitFor: async () => checked.push('answer-visible'),
+    locator: (selector) => {
+      if (selector === '.break-words') {
+        return {
+          first: () => ({
+            innerText: async () =>
+              'For JKM Warga Emas, prepare the application documents listed in the official guidance, including identity and income records.'
+          })
+        }
+      }
+      if (selector === 'p.italic') return { count: async () => 0 }
+      if (selector === 'li') return { count: async () => 3 }
+      if (selector === '.citation-chip') return citation
+      throw new Error(`unexpected selector ${selector}`)
+    }
+  }
+  const answers = {
+    count: async () => 1,
+    nth: (index) => {
+      assert.equal(index, 0)
+      return answer
+    }
+  }
+  const chatDialog = {
+    locator: (selector) => {
+      assert.equal(selector, '.rounded-bl-sm')
+      return answers
+    }
+  }
+
+  assert.equal(await proof.verifyGroundedChatAnswer(chatDialog, 0), answer)
+  assert.deepEqual(checked, ['answer-visible', /jkm/i, 'citation-visible'])
+})
