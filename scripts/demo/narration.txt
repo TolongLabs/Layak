@@ -1,0 +1,35 @@
+# Narration, keyed to the beats record.mjs measures rather than to fixed
+# timestamps. Each line is:  beat | offset_ms | text
+#
+# The offset is from that beat, so a page that gets slower moves the narration
+# with it. schedule.py then pushes any line that would still be speaking when the
+# next one starts -- an overlap no mechanical audio check can hear, because level,
+# clipping, silence and dynamics are all normal when two voices talk at once.
+#
+# Naming a beat that never happened drops the line with a warning rather than
+# narrating over the wrong picture. Run record.mjs first and read its output: it
+# prints every beat it recorded and every surface it failed to film.
+#
+# THREE RULES FOR THE TEXT ITSELF
+#
+# 1. Every number spoken here is measured, and you say where you measured it.
+#    A figure that came from a chat message and not from the running system is
+#    the fastest way to lose a Q&A.
+# 2. One claim per line. Two claims in one breath and the subtitle splits across
+#    two cards while the picture only shows the first.
+# 3. Say what is on screen. A line describing a feature the viewer cannot see
+#    reads as an unsupported claim, not a demo.
+#
+# Target: 60–75 second investor walkthrough, 125–150 spoken words.
+
+landing | 0 | Malaysia's aid landscape is fragmented across ministries, agencies, and disconnected portals.
+dashboard | 150 | Layak turns that search into one guided, evidence-backed journey for every citizen.
+intake | 200 | Citizens start by uploading identity and income records, or select privacy-first manual entry.
+processing | 200 | A visible six-step pipeline extracts data, classifies households, and executes rule matching.
+results | 200 | Ranked results surface thirteen thousand eight hundred ringgit in annual relief for our reference household.
+evidence | 200 | Every qualification cites a gazetted government PDF, giving every ringgit clear receipts.
+strategy | 200 | Cross-scheme strategy advisories identify coordination opportunities to maximize net household benefit.
+chat | 200 | Cik Lay, our grounded conversational concierge, answers citizen questions directly from their evaluation.
+whatif | 200 | What-if sliders rerun income and dependent scenarios live in under two seconds.
+packets | 200 | Pre-filled, watermarked draft application packets are prepared for official manual submission.
+end | 200 | Layak transforms public assistance from a bureaucratic maze into transparent citizen entitlement.

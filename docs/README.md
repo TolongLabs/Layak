@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="frontend/public/layak-logo.png" alt="Layak logo" width="140" />
+<img src="../frontend/public/layak-logo.png" alt="Layak logo" width="140" />
 
 # Layak
 
@@ -36,7 +36,7 @@ _Three uploads. One website. Six autonomous steps. **Zero hallucinated rules.**_
 
 <br/>
 
-<img src="assets/banner.png" alt="Layak functional diagram" width="900" />
+<img src="../assets/banner.png" alt="Layak functional diagram" width="900" />
 
 <br/>
 
@@ -86,19 +86,19 @@ _Three uploads. One website. Six autonomous steps. **Zero hallucinated rules.**_
 
 <table>
   <tr>
-    <td width="33%"><img src="assets/screenshots/01-landing.png" alt="Landing page" /><p align="center"><sub>Landing: <em>every Malaysian scheme you qualify for, in one upload</em></sub></p></td>
-    <td width="33%"><img src="assets/screenshots/02-dashboard.png" alt="Signed-in dashboard" /><p align="center"><sub>Dashboard: application drafts and recent activity</sub></p></td>
-    <td width="33%"><img src="assets/screenshots/03-upload-intake.png" alt="Upload intake" /><p align="center"><sub>Upload intake: sample, upload, or manual entry</sub></p></td>
+    <td width="33%"><img src="../assets/screenshots/01-landing.png" alt="Landing page" /><p align="center"><sub>Landing: <em>every Malaysian scheme you qualify for, in one upload</em></sub></p></td>
+    <td width="33%"><img src="../assets/screenshots/02-dashboard.png" alt="Signed-in dashboard" /><p align="center"><sub>Dashboard: application drafts and recent activity</sub></p></td>
+    <td width="33%"><img src="../assets/screenshots/03-upload-intake.png" alt="Upload intake" /><p align="center"><sub>Upload intake: sample, upload, or manual entry</sub></p></td>
   </tr>
   <tr>
-    <td width="33%"><img src="assets/screenshots/04-schemes-catalog.png" alt="Scheme library" /><p align="center"><sub>Scheme library: every scheme Layak reasons over</sub></p></td>
-    <td width="33%"><img src="assets/screenshots/05-manual-entry.png" alt="Manual entry form" /><p align="center"><sub>Manual entry: privacy-first path, no docs required</sub></p></td>
-    <td width="33%"><img src="assets/screenshots/06-results-page.png" alt="Results page" /><p align="center"><sub>Results: ranked schemes, cited sources, strategy advisories</sub></p></td>
+    <td width="33%"><img src="../assets/screenshots/04-schemes-catalog.png" alt="Scheme library" /><p align="center"><sub>Scheme library: every scheme Layak reasons over</sub></p></td>
+    <td width="33%"><img src="../assets/screenshots/05-manual-entry.png" alt="Manual entry form" /><p align="center"><sub>Manual entry: privacy-first path, no docs required</sub></p></td>
+    <td width="33%"><img src="../assets/screenshots/06-results-page.png" alt="Results page" /><p align="center"><sub>Results: ranked schemes, cited sources, strategy advisories</sub></p></td>
   </tr>
   <tr>
-    <td width="33%"><img src="assets/screenshots/07-cik-lay-chat.png" alt="Cik Lay chatbot" /><p align="center"><sub>Cik Lay: grounded chatbot, multilingual (en / ms / zh)</sub></p></td>
-    <td width="33%"><img src="assets/screenshots/08-what-if-sliders.png" alt="What-if scenario sliders" /><p align="center"><sub>What-If: live partial rerun under 2 s, no re-upload</sub></p></td>
-    <td width="33%"><img src="assets/screenshots/09-admin-discovery.png" alt="Admin discovery queue" /><p align="center"><sub>Admin: agentic scheme discovery + human-in-the-loop moderation</sub></p></td>
+    <td width="33%"><img src="../assets/screenshots/07-cik-lay-chat.png" alt="Cik Lay chatbot" /><p align="center"><sub>Cik Lay: grounded chatbot, multilingual (en / ms / zh)</sub></p></td>
+    <td width="33%"><img src="../assets/screenshots/08-what-if-sliders.png" alt="What-if scenario sliders" /><p align="center"><sub>What-If: live partial rerun under 2 s, no re-upload</sub></p></td>
+    <td width="33%"><img src="../assets/screenshots/09-admin-discovery.png" alt="Admin discovery queue" /><p align="center"><sub>Admin: agentic scheme discovery + human-in-the-loop moderation</sub></p></td>
   </tr>
 </table>
 
@@ -522,7 +522,7 @@ Layak/
 
 ## 📜 License
 
-Layak is open source under the **MIT License** - see [`LICENSE`](LICENSE).
+Layak is open source under the **MIT License** - see [`LICENSE`](../LICENSE).
 
 You're free to use, fork, study, modify, and redistribute the code for commercial or non-commercial purposes. The only binding condition is **attribution**: preserve the copyright notice in any derivative work, and (where reasonable) link back to this repository.
 
