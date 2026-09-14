@@ -1,5 +1,7 @@
 const AISYAH_NAME = 'aisyah binti ahmad'
 const MIN_CHAT_ANSWER_CHARS = 80
+const CHAT_REFUSAL =
+  /\b(?:i\s+(?:cannot|can't|can not)|i(?:'|’)m unable to|unable to)\s+(?:\w+\s+){0,3}(?:verify|provide|find|confirm|access|answer)\b/i
 
 function normaliseName(value) {
   return String(value ?? '')
@@ -52,5 +54,31 @@ export function isSubstantiveChatAnswer(value, options = {}) {
     .replace(/\s+/g, ' ')
     .trim()
     .toLocaleLowerCase('en')
-  return normalized.length >= minChars && keywords.every((keyword) => normalized.includes(keyword.toLocaleLowerCase('en')))
+  return (
+    normalized.length >= minChars &&
+    !CHAT_REFUSAL.test(normalized) &&
+    keywords.every((keyword) => normalized.includes(keyword.toLocaleLowerCase('en')))
+  )
+}
+
+export async function verifyGroundedChatAnswer(chatDialog, previousAnswerCount, timeout = 15_000) {
+  const answers = chatDialog.locator('.rounded-bl-sm')
+  const answer = answers.nth(previousAnswerCount)
+  await answer.waitFor({ state: 'visible', timeout })
+
+  const observedCount = await answers.count()
+  if (observedCount !== previousAnswerCount + 1) {
+    throw new Error(`Cik Lay expected one new answer; observed ${observedCount - previousAnswerCount}`)
+  }
+
+  const answerText = await answer.locator('.break-words').first().innerText()
+  if (!isSubstantiveChatAnswer(answerText, { keywords: ['jkm', 'document'] })) {
+    throw new Error(`Cik Lay returned an incomplete or irrelevant answer: ${answerText.slice(0, 80)}`)
+  }
+  if ((await answer.locator('p.italic').count()) > 0) {
+    throw new Error('Cik Lay completed without live PDF grounding')
+  }
+
+  await answer.locator('.citation-chip').filter({ hasText: /jkm/i }).first().waitFor({ state: 'visible', timeout })
+  return answer
 }

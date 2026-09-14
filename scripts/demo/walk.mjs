@@ -4,9 +4,9 @@
 
 import { smoothScrollTo } from './motion.mjs'
 import {
-  isSubstantiveChatAnswer,
   verifyAisyahResult,
   verifyGovernmentSource,
+  verifyGroundedChatAnswer,
   watchAisyahResult
 } from './proof.mjs'
 
@@ -214,6 +214,7 @@ export async function walk({ page, mark: captureMark, beat, filmed, WEB }) {
   await smoothScrollTo(page, whyQualify, { viewportRatio: 0.32 })
   await beat(250)
   await whyQualify.click()
+  await topScheme.locator('button[aria-expanded="true"] p[aria-hidden="false"]').waitFor({ state: 'visible' })
   await beat(250)
   await mark('qualification')
   filmed.qualification = 1
@@ -245,6 +246,7 @@ export async function walk({ page, mark: captureMark, beat, filmed, WEB }) {
 
   const expandChat = chatDialog.getByRole('button', { name: 'Expand to centre modal' })
   await expandChat.click()
+  await chatDialog.getByRole('button', { name: 'Collapse to side panel' }).waitFor({ state: 'visible' })
   const chatInput = chatDialog.getByPlaceholder('Ask about your results…')
   await chatInput.waitFor({ state: 'visible' })
   await beat(300)
@@ -256,13 +258,12 @@ export async function walk({ page, mark: captureMark, beat, filmed, WEB }) {
   await chatInput.fill('')
   await chatInput.pressSequentially(chatQuestion, { delay: 42 })
   await beat(500)
+  const assistantAnswers = chatDialog.locator('.rounded-bl-sm')
+  const answerCountBefore = await assistantAnswers.count()
   await chatDialog.getByRole('button', { name: 'Send' }).click()
   await chatDialog.getByText(chatQuestion, { exact: true }).waitFor({ state: 'visible' })
   await chatDialog.getByText('Follow-up questions', { exact: true }).waitFor({ state: 'visible', timeout: 90_000 })
-  const answerText = await chatDialog.locator('.rounded-bl-sm > .break-words').last().innerText()
-  if (!isSubstantiveChatAnswer(answerText, { keywords: ['jkm', 'document'] })) {
-    throw new Error(`Cik Lay returned an incomplete or irrelevant answer: ${answerText.slice(0, 80)}`)
-  }
+  await verifyGroundedChatAnswer(chatDialog, answerCountBefore)
   await beat(300)
   await mark('ciklay_answer')
   filmed.ciklay_answer = 1

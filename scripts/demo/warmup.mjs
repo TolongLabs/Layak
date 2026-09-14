@@ -3,7 +3,7 @@
 // completed result so cold-start latency stays off-camera without implying that
 // a fresh analysis completed instantly.
 
-import { isSubstantiveChatAnswer, verifyAisyahResult, watchAisyahResult } from './proof.mjs'
+import { verifyAisyahResult, verifyGroundedChatAnswer, watchAisyahResult } from './proof.mjs'
 
 export async function warmProduction({ browser, web, resultUrl, log = console.log, attempts = 2 }) {
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
@@ -34,12 +34,11 @@ export async function warmProduction({ browser, web, resultUrl, log = console.lo
       const stagedQuestion = await chatInput.inputValue()
       if (!stagedQuestion.trim()) throw new Error('Strategy did not stage a Cik Lay question')
       await chatInput.fill('How do I apply for JKM Warga Emas, and what documents should I prepare?')
+      const assistantAnswers = chatDialog.locator('.rounded-bl-sm')
+      const answerCountBefore = await assistantAnswers.count()
       await chatDialog.getByRole('button', { name: 'Send' }).click()
       await chatDialog.getByText('Follow-up questions', { exact: true }).waitFor({ state: 'visible', timeout: 90_000 })
-      const answerText = await chatDialog.locator('.rounded-bl-sm > .break-words').last().innerText()
-      if (!isSubstantiveChatAnswer(answerText, { keywords: ['jkm', 'document'] })) {
-        throw new Error(`Cik Lay returned an incomplete or irrelevant answer: ${answerText.slice(0, 80)}`)
-      }
+      await verifyGroundedChatAnswer(chatDialog, answerCountBefore)
       await chatDialog.getByRole('button', { name: 'Close chat' }).click()
 
       const draftToggle = page.locator('#preview button[aria-expanded]').first()

@@ -87,4 +87,55 @@ test('Cik Lay proof rejects a token or truncated answer', () => {
     ),
     true
   )
+  assert.equal(
+    proof.isSubstantiveChatAnswer(
+      'I cannot verify JKM requirements or provide the documents you need because the live sources are unavailable right now.',
+      { keywords: ['jkm', 'document'] }
+    ),
+    false
+  )
+})
+
+test('grounded Cik Lay proof requires one new answer without an unavailable marker and a JKM citation', async () => {
+  const checked = []
+  const citation = {
+    filter: ({ hasText }) => {
+      checked.push(hasText)
+      return citation
+    },
+    first: () => citation,
+    waitFor: async () => checked.push('citation-visible')
+  }
+  const answer = {
+    waitFor: async () => checked.push('answer-visible'),
+    locator: (selector) => {
+      if (selector === '.break-words') {
+        return {
+          first: () => ({
+            innerText: async () =>
+              'For JKM Warga Emas, prepare the application documents listed in the official guidance, including identity and income records.'
+          })
+        }
+      }
+      if (selector === 'p.italic') return { count: async () => 0 }
+      if (selector === '.citation-chip') return citation
+      throw new Error(`unexpected selector ${selector}`)
+    }
+  }
+  const answers = {
+    count: async () => 1,
+    nth: (index) => {
+      assert.equal(index, 0)
+      return answer
+    }
+  }
+  const chatDialog = {
+    locator: (selector) => {
+      assert.equal(selector, '.rounded-bl-sm')
+      return answers
+    }
+  }
+
+  assert.equal(await proof.verifyGroundedChatAnswer(chatDialog, 0), answer)
+  assert.deepEqual(checked, ['answer-visible', /jkm/i, 'citation-visible'])
 })

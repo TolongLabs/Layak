@@ -39,17 +39,20 @@ test('the VC walk uses the streamlined citizen journey', () => {
     walkSource,
     /const topScheme = schemes\.locator\('li\[id\^="scheme-"\]'\)\.first\(\)[\s\S]*const whyQualify = topScheme\.getByRole\('button', \{ name: 'Tap to reveal' \}\)/
   )
+  assert.ok(walkSource.includes("topScheme.locator('button[aria-expanded=\"true\"] p[aria-hidden=\"false\"]')"))
   assert.ok(walkSource.includes("topScheme.locator('summary')"))
   assert.ok(walkSource.includes("page.locator('#strategy')"))
   assert.ok(walkSource.includes("getByRole('button', { name: 'Ask Cik Lay About This' })"))
   assert.ok(walkSource.includes("getByRole('button', { name: 'Expand to centre modal' })"))
+  assert.ok(walkSource.includes("getByRole('button', { name: 'Collapse to side panel' })"))
   assert.ok(walkSource.includes("getByRole('button', { name: 'Send' })"))
   assert.ok(walkSource.includes("getByText('Follow-up questions'"))
   assert.ok(walkSource.includes('const stagedQuestion = await chatInput.inputValue()'))
   assert.ok(walkSource.includes("const chatQuestion = 'How do I apply for JKM Warga Emas, and what documents should I prepare?'"))
   assert.ok(walkSource.includes('chatInput.pressSequentially(chatQuestion'))
-  assert.ok(walkSource.includes("chatDialog.locator('.rounded-bl-sm > .break-words').last()"))
-  assert.ok(walkSource.includes("isSubstantiveChatAnswer(answerText, { keywords: ['jkm', 'document'] })"))
+  assert.ok(walkSource.includes("const assistantAnswers = chatDialog.locator('.rounded-bl-sm')"))
+  assert.ok(walkSource.includes('const answerCountBefore = await assistantAnswers.count()'))
+  assert.ok(walkSource.includes('verifyGroundedChatAnswer(chatDialog, answerCountBefore)'))
   assert.doesNotMatch(walkSource, /scrollIntoViewIfNeeded/)
   assert.match(walkSource, /About one minute later/)
   assert.doesNotMatch(walkSource, /About four minutes later/)
@@ -59,7 +62,7 @@ test('the VC walk uses the streamlined citizen journey', () => {
   assert.ok(warmupSource.includes("getByRole('button', { name: 'Ask Cik Lay About This' })"))
   assert.ok(warmupSource.includes("getByText('Follow-up questions'"))
   assert.ok(warmupSource.includes("chatInput.fill('How do I apply for JKM Warga Emas, and what documents should I prepare?')"))
-  assert.ok(warmupSource.includes("isSubstantiveChatAnswer(answerText, { keywords: ['jkm', 'document'] })"))
+  assert.ok(warmupSource.includes('verifyGroundedChatAnswer(chatDialog, answerCountBefore)'))
 })
 
 test('camera pacing clears every measured default-Kokoro line before the next beat', () => {

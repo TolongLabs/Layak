@@ -25,18 +25,41 @@ test('warmProduction primes guest dashboard and saved results outside a recordin
       'Who in my family should claim the dependent-parent relief, and how do we coordinate it on the LHDN portal?',
     fill: async () => visits.push('chat-question-set')
   }
+  const citation = {
+    filter() {
+      return this
+    },
+    first() {
+      return this
+    },
+    waitFor: async () => {}
+  }
+  const answerBubble = {
+    waitFor: async () => {},
+    locator: (selector) => {
+      if (selector === '.break-words') {
+        return {
+          first: () => ({
+            innerText: async () =>
+              'For JKM Warga Emas, prepare the application documents listed in the official guidance, including identity and income records.'
+          })
+        }
+      }
+      if (selector === 'p.italic') return { count: async () => 0 }
+      return citation
+    }
+  }
+  const assistantAnswers = {
+    count: async () => (visits.includes('chat-send') ? 1 : 0),
+    nth: () => answerBubble
+  }
   const chatDialog = {
     getByPlaceholder: () => chatInput,
     getByRole: (_role, { name }) => ({
       click: async () => visits.push(name === 'Send' ? 'chat-send' : 'chat-close')
     }),
     getByText: () => ({ waitFor: async () => visits.push('chat-finished') }),
-    locator: () => ({
-      last: () => ({
-        innerText: async () =>
-          'For JKM Warga Emas, prepare the application documents listed in the official guidance, including identity and income records.'
-      })
-    })
+    locator: () => assistantAnswers
   }
   const strategy = {
     getByRole: () => first
@@ -128,6 +151,7 @@ test('warmProduction primes guest dashboard and saved results outside a recordin
 test('warmProduction retries a transient cold-start failure', async () => {
   let attempts = 0
   let closes = 0
+  let chatSent = false
   const ready = {
     first() {
       return this
@@ -148,16 +172,46 @@ test('warmProduction retries a transient cold-start failure', async () => {
       'Who in my family should claim the dependent-parent relief, and how do we coordinate it on the LHDN portal?',
     fill: async () => {}
   }
+  const citation = {
+    filter() {
+      return this
+    },
+    first() {
+      return this
+    },
+    waitFor: async () => {}
+  }
+  const answerBubble = {
+    waitFor: async () => {},
+    locator: (selector) => {
+      if (selector === '.break-words') {
+        return {
+          first: () => ({
+            innerText: async () =>
+              'For JKM Warga Emas, prepare the application documents listed in the official guidance, including identity and income records.'
+          })
+        }
+      }
+      if (selector === 'p.italic') return { count: async () => 0 }
+      return citation
+    }
+  }
+  const assistantAnswers = {
+    count: async () => (chatSent ? 1 : 0),
+    nth: () => answerBubble
+  }
   const chatDialog = {
     getByPlaceholder: () => chatInput,
-    getByRole: () => first,
+    getByRole: (_role, options = {}) =>
+      options.name === 'Send'
+        ? {
+            click: async () => {
+              chatSent = true
+            }
+          }
+        : first,
     getByText: () => ({ waitFor: async () => {} }),
-    locator: () => ({
-      last: () => ({
-        innerText: async () =>
-          'For JKM Warga Emas, prepare the application documents listed in the official guidance, including identity and income records.'
-      })
-    })
+    locator: () => assistantAnswers
   }
   const strategy = {
     getByRole: () => first
